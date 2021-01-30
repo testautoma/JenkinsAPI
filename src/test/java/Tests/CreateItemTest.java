@@ -6,16 +6,16 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class CreateItemTest extends BaseTest{
+
     @Test
     public void createItem() {
         Job expectedJob = JobBuilder.defaultValues().setName("Test1").build();
         network.createJob(expectedJob)
                 .then().statusCode(200);
+        jobNamesToDelete.add(expectedJob.name);
         Job actualJob = Job.getJobFromResponse(network.getJob(expectedJob.name));
 
         Assert.assertTrue(expectedJob.same(actualJob));
-
-        network.deleteJob(expectedJob.name);
     }
 
     @Test
@@ -40,8 +40,10 @@ public class CreateItemTest extends BaseTest{
     @Test
     public void copyItem() {
         Job job = JobBuilder.defaultValues().setName("Test1").build();
-        String job2Name = "Test2";
         network.createJob(job);
+        jobNamesToDelete.add(job.name);
+
+        String job2Name = "Test2";
 
         network.authorizedGiven()
                 .queryParam("name", job2Name)
@@ -49,24 +51,23 @@ public class CreateItemTest extends BaseTest{
                 .queryParam("from", job.name)
                 .contentType("application/xml")
                 .when().post(network.path("createItem"));
-        Job job2 = Job.getJobFromResponse(network.getJob(job2Name));
-        Assert.assertTrue(job.sameParameters(job2));
+        jobNamesToDelete.add(job2Name);
 
-        network.deleteJob(job.name);
-        network.deleteJob(job2Name);
+        Job job2 = Job.getJobFromResponse(network.getJob(job2Name));
+
+        Assert.assertTrue(job.sameParameters(job2));
     }
 
     @Test
     public void copyItemWithoutParameters() {
         Job job = JobBuilder.defaultValues().setName("Test1").build();
         network.createJob(job);
+        jobNamesToDelete.add(job.name);
 
         network.authorizedGiven()
                 .queryParam("from", job.name)
                 .contentType("application/xml")
                 .when().post(network.path("createItem"))
                 .then().statusCode(400); //400 Bad Request
-
-        network.deleteJob(job.name);
     }
 }

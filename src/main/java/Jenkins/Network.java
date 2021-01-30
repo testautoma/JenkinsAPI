@@ -11,9 +11,9 @@ import static io.restassured.RestAssured.given;
 
 public class Network {
 
-    private String basePath;
-    private String user;
-    private String password;
+    private final String basePath;
+    private final String user;
+    private final String password;
 
     private Cookies cookies = new Cookies();
 
@@ -29,7 +29,7 @@ public class Network {
     }
 
     private String getCrumbIssuer() {
-        ExtractableResponse response = given()
+        ExtractableResponse<?> response = given()
                 .header("Authorization", authorizationHeader())
                 .when().get(basePath + "crumbIssuer/api/json")
                 .then().extract();
@@ -65,11 +65,13 @@ public class Network {
                 .when().post(basePath + "job/" + name + "/doDelete");
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public Response disableJob(String name) {
         return authorizedGiven()
                 .when().post(basePath + "job/" + name + "/disable");
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public Response enableJob(String name) {
         return authorizedGiven()
                 .when().post(basePath + "job/" + name + "/enable");
